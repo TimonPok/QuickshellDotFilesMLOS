@@ -1,0 +1,128 @@
+import QtQuick
+import Quickshell
+import Quickshell.Wayland
+import Quickshell.Hyprland
+import QtQuick.Layouts
+import Quickshell.Io
+
+
+PanelWindow{
+	id: root
+	anchors.top: true
+	anchors.left: true
+	anchors.right: true
+	implicitHeight: 35
+	
+
+
+	color: "#052e2b"
+
+
+	// Theme
+	
+	property string fontFamily: "ttf-space-mono-nerd"
+    
+
+
+
+	
+	property int cpuUsage: 0
+	property var lastCpuIdle: 0
+	property var lastCpuTotal: 0
+    property int memUsage: 0
+
+    property bool clockStyle: false 
+
+
+	Process {
+		id: cpuProc
+		command: ["sh", "-c","head -1 /proc/stat"]
+		stdout: SplitParser {
+			onRead:data => {
+				var p = data.trim().split(/\s+/)
+				var idle = parseInt(p[4]) + parseInt(p[5])
+				var total = p.slice(1,8).reduce((a,b) => a + parseInt(b),0)
+				if (lastCpuTotal>0) {
+					cpuUsage = Math.round(100*(1-(idle-lastCpuIdle)/(total-lastCpuTotal)))
+				}
+				lastCpuTotal=total
+				lastCpuIdle=idle
+			}
+		}
+		Component.onCompleted: running = true
+	}
+	Timer {
+		interval:2000
+		running:true
+		repeat: true
+		onTriggered:cpuProc.running = true
+	}
+	
+
+
+	// Workspaces
+    //Retangle
+
+	RowLayout {
+		anchors.fill: parent
+		anchors.margins: 8
+
+		Repeater {
+			model: 10
+
+			Text {
+				anchors.top: parent.top
+				property var ws: Hyprland.workspaces.values.find(w=>w.id === index + 1)
+				property bool isActive: Hyprland.focusedWorspace?.id === (index + 1)
+				text: index
+				color: isActive ? "0db9d7" : (ws? "#ffffff" : "#444b6a")
+				font { pixelSize: 15; bold: true}
+
+				MouseArea {
+					anchors.fill: parent
+					onClicked: Hyprland.dispatch("workspace " + (index + 1))
+				}
+			}
+		}
+        
+		Item {Layout.fillWidth:true}
+	
+		Text {
+			text: "CPU " + cpuUsage + "%"
+			
+			color: "#aaaaaa"
+			font {family:root.fontFamily; pixelSize: 14; bold: true}
+		}	
+		Text {
+			
+			id: clock
+			
+			
+			text: Qt.formatDateTime(new Date(), "yyyy-MM-dd - HH:mm:ss")
+			color: "#ffffff"
+			font {family:root.fontFamily;pixelSize: 14; bold: true}
+            MouseArea {
+                anchors.fill: parent
+                onClicked: clockStyle = !clockStyle
+                //PopupWindow{
+               //     anchor.window: root
+                 //   anchor.rect.x: parentWindow.width
+                  //  anchor.rect.y: parentWindow.height
+                  //  width: 200
+                  //  height: 200
+                  //  visible: true
+               // }
+
+
+
+
+            }
+            Timer {
+				interval: 1000
+				running: true
+				repeat: true
+				onTriggered: clock.text = Qt.formatDateTime(new Date(),(clockStyle ? "ddd, MMM dd - HH:mm:ss" : "yyyy-MM-dd - HH:mm:ss"))
+			}
+		}
+	}
+}

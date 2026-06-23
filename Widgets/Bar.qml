@@ -1,5 +1,6 @@
 import QtQuick
 import Quickshell
+import QtQuick.Layouts
 import Quickshell.Hyprland
 
 
@@ -7,103 +8,101 @@ PanelWindow {
     id:panel
 
 
-    
+    color:"transparent" 
     property bool clockStyle: false
 
     anchors {
-        top: true
-        left: true
-        right: true
-    }
+	    top: true
+	    right: true
+	    left:true
+	}
+    margins {left:5;top:5;right:5;bottom:5}
+    aboveWindows: true
+    
     implicitHeight: 35
-
+    property bool wide: false
 
 
     Rectangle {
-        id: bar
-        anchors.fill:parent
-        color: "#052e2b"
-        border.color: "#222222"
+	    id:smth
 
-        border.width: 2
-
-        Row{
-            id: workspacesRow
-
-            anchors {
-                left: parent.left
-
-                verticalCenter: parent.verticalCenter
-                leftMargin:16
-            }    
-            spacing: 8 
-            Repeater {
-                model: 10
-        
-                Text {
-                    anchors.top:parent.top
-                    property var ws: Hyprland.workspaces.values.find(w=>w.id === index + 1)
-                    property bool isActive: Hyprland.focusedWorkspace?.id === (index + 1)
-
-                    text: index
-                    color: isActive ? "#0db9d7" : (ws ? "#ffffff" : "#444b7a")
+    }
 
 
-                    font {pixelSize:15; bold:true}
-                    
-                    MouseArea {
-                        anchors.fill:parent
-                        onClicked: Hyprland.dispatch("workspace " + (index+1))
-                    
-                    }
-                }
-            }
-            Text {
-                visible: Hyprland.workspaces.length === 0
-                text: "No workspaces"
-                color: "#ffffff"
-            }
-        }
-        SystemClock {
-            id: clock
-            precision: SystemClock.Seconds
-        }
-        Text {
-            anchors {
-                centerIn: parent
-                verticalCenter: parent.verticalCenter
-                rightMargin:16
 
-            }            
-            text: Qt.formatDateTime(clock.date, (clockStyle ? "yyyy-MM-dd - HH:mm:ss" : "ddd, MMM dd - HH:mm:ss"))
-            color: "#ffffff"
-            font.pixelSize: 14
-            font.bold: true
-            MouseArea{
-                acceptedButtons: Qt.AllButtons;
-                anchors.fill: parent
-                onClicked: {
-                    if (mouse.button === Qt.RightButton) {
-                        clockStyle = !clockStyle
-                    }
-                }
-            
-            }
-        }        
-        Rectangle{
-            id: button
-            anchors {
-                right: parent.right
-            }
-            color: "#ffffff"
-            width: 20
-            height: 20
-            MouseArea {
 
-                anchors.fill: parent
-                onClicked: Qt.quit()
-            }    
-        }
-        
+
+
+    RowLayout{
+	        id: clipwraprect
+		implicitWidth:parent.width
+		implicitHeight:parent.height
+		anchors.fill:parent
+	    Rectangle {
+		id: clockbar
+		anchors.centerIn:parent
+		color: "#1e1e1e"
+		border.color: "#d72638"
+		border.width: 2
+		radius:wide=== true ? 50:8
+		implicitWidth:wide === true ? 300:panel.width
+		height: parent.height
+
+		Behavior on implicitWidth {
+			NumberAnimation{
+				duration: 900
+				//easing.type: Easing.OutBounce
+				easing.type: Easing.OutQuint
+			}
+		}
+
+		SystemClock {
+		    id: clock
+		    precision: SystemClock.seconds
+		}
+		Text {
+		    anchors {
+			centerIn: clockbar
+			verticalCenter: parent.verticalCenter
+			rightMargin:16
+
+		    }            
+		    text: Qt.formatDateTime(clock.date, (clockStyle ? "yyyy-MM-dd - HH:mm:ss" : "ddd, MMM dd - HH:mm:ss"))
+		    color: "#D72638"
+
+		    font.pixelSize: 14
+		    font.bold: true
+		    MouseArea{
+			acceptedButtons: Qt.AllButtons;
+			anchors.fill: parent
+			onClicked: {
+			    if (mouse.button === Qt.LeftButton) {
+				wide = !wide
+			    }
+			    if (mouse.button === Qt.RightButton) {
+				clockStyle = !clockStyle
+			}
+
+			}
+		    
+		    }
+	        }
+		
+
+
+	}
+	Item{
+		Layout.fillWidth:true
+	}
+	Rectangle{
+		    id:widgets
+		    color:"#1e1e1e"
+		    implicitWidth:300
+		    implicitHeight:parent
+		    border.color: "#d72638"
+		    border.width:2
+		    radius:wide === true ? 50:8
+
+	    }
     }
 }

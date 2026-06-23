@@ -5,19 +5,13 @@ import "~/Wallpapers"
 
 PanelWindow {
     id: wallpaper
-    anchors {
-        top:true
-        bottom:true
-        left:true
-        right:true
-    }
-    aboveWindows: false
-    
+    width: screen.width
+    height: screen.height
+    aboveWindows:false
+
     Image {
+	anchors.fill: parent 
         asynchronous: true
         source: "IMissYouNiko"
-
-        width: parent.width
-        height: parent.height
     }    
 }

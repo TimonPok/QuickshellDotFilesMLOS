@@ -23,6 +23,12 @@ ShellRoot {
     }
     Loader{
         active: true
-        sourceComponent: Bar {}
-    }
+	sourceComponent: Bar {}
+	}
+    Loader{
+	active:true
+	sourceComponent: Notifications {}
+	
+	}
+    
 }
